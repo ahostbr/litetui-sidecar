@@ -1,5 +1,4 @@
-//! The parent/child wire envelope. LiteTUI owns data; the WebView never reads files to
-//! answer settings or calendar requests. This module validates untrusted line frames.
+//! Child-facing frame validation. The parent remains authoritative for all data.
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -62,6 +61,13 @@ mod tests {
         assert_eq!(
             decode(
                 br#"{"version":1,"id":7,"token":"secret","command":"open","oops":1}"#,
+                "secret"
+            ),
+            Err(FrameError::Malformed)
+        );
+        assert_eq!(
+            decode(
+                br#"{"version":1,"id":7,"token":"secret","command":""}"#,
                 "secret"
             ),
             Err(FrameError::Malformed)
