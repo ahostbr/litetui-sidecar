@@ -146,6 +146,30 @@ fn handle_parent(frame: ParentFrame, webview: &wry::WebView) {
                 _ => serde_json::json!({"error": "invalid view"}),
             }
         }
+        "settings_snapshot" => {
+            if frame
+                .payload
+                .get("fields")
+                .and_then(serde_json::Value::as_object)
+                .is_some()
+                && frame
+                    .payload
+                    .get("revisions")
+                    .and_then(serde_json::Value::as_object)
+                    .is_some()
+            {
+                let script = format!(
+                    "window.SidecarShell?.settingsSnapshot({});",
+                    serde_json::to_string(&frame.payload).expect("validated JSON payload")
+                );
+                match webview.evaluate_script(&script) {
+                    Ok(()) => serde_json::json!({"settings_snapshot": true}),
+                    Err(_) => serde_json::json!({"error": "settings preview unavailable"}),
+                }
+            } else {
+                serde_json::json!({"error": "invalid settings snapshot"})
+            }
+        }
         "shutdown" => {
             // A bounded parent termination owns the child after this acknowledgement.
             serde_json::json!({"closing": true})
