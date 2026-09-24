@@ -27,6 +27,7 @@ fn initial_view() -> Result<(&'static str, Option<String>), String> {
         [] => Ok(("timeline", None)),
         [flag] if flag == "--version" => Ok(("version", None)),
         [flag, view] if flag == "--view" => match view.as_str() {
+            "timeline" => Ok(("timeline", None)),
             "settings" => Ok(("settings", None)),
             "calendar" => Ok(("calendar", None)),
             "job" => Ok(("job", None)),
@@ -39,6 +40,7 @@ fn initial_view() -> Result<(&'static str, Option<String>), String> {
                 return Err("invalid parent capability".into());
             }
             match view.as_str() {
+                "timeline" => Ok(("timeline", Some(capability))),
                 "settings" => Ok(("settings", Some(capability))),
                 "calendar" => Ok(("calendar", Some(capability))),
                 "job" => Ok(("job", Some(capability))),
@@ -46,8 +48,7 @@ fn initial_view() -> Result<(&'static str, Option<String>), String> {
             }
         }
         _ => Err(
-            "usage: litetui-sidecar [--view settings|calendar|job [--parent-pipe CAPABILITY]]"
-                .into(),
+            "usage: litetui-sidecar [--view timeline|settings|calendar|job [--parent-pipe]]".into(),
         ),
     }
 }
