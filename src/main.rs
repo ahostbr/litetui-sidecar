@@ -170,6 +170,25 @@ fn handle_parent(frame: ParentFrame, webview: &wry::WebView) {
                 serde_json::json!({"error": "invalid settings snapshot"})
             }
         }
+        "jobs_snapshot" => {
+            if frame
+                .payload
+                .get("jobs")
+                .and_then(serde_json::Value::as_array)
+                .is_some()
+            {
+                let script = format!(
+                    "window.SidecarShell?.jobsSnapshot({});",
+                    serde_json::to_string(&frame.payload).expect("validated JSON payload")
+                );
+                match webview.evaluate_script(&script) {
+                    Ok(()) => serde_json::json!({"jobs_snapshot": true}),
+                    Err(_) => serde_json::json!({"error": "jobs preview unavailable"}),
+                }
+            } else {
+                serde_json::json!({"error": "invalid jobs snapshot"})
+            }
+        }
         "shutdown" => {
             // A bounded parent termination owns the child after this acknowledgement.
             serde_json::json!({"closing": true})
